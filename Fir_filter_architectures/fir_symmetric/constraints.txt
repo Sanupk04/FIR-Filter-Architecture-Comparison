@@ -1,0 +1,15 @@
+# 100 MHz clock
+create_clock -name sys_clk -period 24.000 [get_ports clk]
+set_clock_uncertainty 0.05 [get_clocks sys_clk]
+
+set_min_delay 0.05 -from [all_registers] -to [all_registers]
+
+# Input delays (apply to all x_in bits + enable)
+set_input_delay 2 -clock sys_clk [get_ports {x_in[*]}]
+set_input_delay 2 -clock sys_clk [get_ports en]
+
+# Output delays (apply to all y_out bits)
+set_output_delay 2 -clock sys_clk [get_ports {y_out[*]}]
+
+# Reset not timed
+set_false_path -from [get_ports rst_n]

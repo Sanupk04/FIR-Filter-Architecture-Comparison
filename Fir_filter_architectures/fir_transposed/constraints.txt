@@ -1,0 +1,5 @@
+create_clock -period 11.000 -name sys_clk [get_ports clk]
+set_input_delay -clock sys_clk 2.000 [get_ports x_in]
+set_input_delay -clock sys_clk 2.000 [get_ports rst_n]
+set_input_delay -clock sys_clk 2.000 [get_ports en]
+set_output_delay -clock sys_clk 2.000 [get_ports y_out]

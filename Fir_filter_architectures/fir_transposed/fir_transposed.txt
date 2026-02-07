@@ -1,0 +1,35 @@
+`timescale 1ns/1ps
+
+module fir_transposed #(
+    parameter TAPS = 32,
+    parameter DATA_WIDTH = 16
+)(
+    input  wire clk,
+    input  wire rst_n,
+    input  wire en,
+    input  wire signed [DATA_WIDTH-1:0] x_in,
+    output reg  signed [DATA_WIDTH-1:0] y_out
+);
+
+    reg signed [15:0] h [0:TAPS-1];
+    `include "fir_coeff_rom.vh"
+
+    reg signed [47:0] acc [0:TAPS-1];
+    integer i;
+
+    always @(posedge clk or negedge rst_n) begin
+        if(!rst_n) begin
+            for(i=0;i<TAPS;i=i+1)
+                acc[i] <= 0;
+            y_out <= 0;
+        end
+        else if(en) begin
+            acc[TAPS-1] <= x_in * h[TAPS-1];
+
+            for(i=TAPS-2;i>=0;i=i-1)
+                acc[i] <= acc[i+1] + (x_in * h[i]);
+
+            y_out <= acc[0] >>> 15;
+        end
+    end
+endmodule

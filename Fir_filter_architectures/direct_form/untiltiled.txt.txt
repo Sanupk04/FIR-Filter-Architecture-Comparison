@@ -1,0 +1,67 @@
+% FIR Filter Design: 32-tap Low-pass (Baseline for Comparison)
+fs = 1000; fpass = 100;
+h = fir1(31, fpass/(fs/2)); % 32 taps
+
+% 1. Quantize Coefficients to 16-bit (Q15)
+h_quant = round(h * (2^15 - 1));
+
+% Save Full Coefficients (32 lines) for RTL $readmemh
+fileID = fopen('my_fir_coeffs_full.txt','w');
+for i = 1:length(h_quant)
+    if h_quant(i) < 0
+        % Convert negative numbers to 16-bit hex strings
+        fprintf(fileID, '%s\n', dec2hex(bit2int(int2bit(h_quant(i),16),16)));
+    else
+        fprintf(fileID, '%04X\n', h_quant(i));
+    end
+end
+fclose(fileID);
+
+% 2. Create Noisy Input Signal (100 samples)
+t = 0:99;
+x = sin(2*pi*50*t/fs);
+x_quant = round(x * (2^14 - 1));
+
+% Save Input Signal as Hex for RTL $fscanf
+fileID_in = fopen('my_fir_input.txt','w');
+for i = 1:length(x_quant)
+    if x_quant(i) < 0
+        fprintf(fileID_in, '%s\n', dec2hex(bit2int(int2bit(x_quant(i),16),16)));
+    else
+        fprintf(fileID_in, '%04X\n', x_quant(i));
+    end
+end
+fclose(fileID_in);
+
+% 3. Generate Synchronized Golden Output
+% Mathematical filter operation
+y_math = filter(h_quant, 1, x_quant); 
+
+% Emulate RTL '>>> 15' using floor for signed-accurate truncation
+y_scaled = floor(y_math / 2^15);
+
+% IMPORTANT: Add 2 zero-latency samples to account for:
+% 1 cycle for reset/initialization
+% 1 cycle for the first multiplication propagation in RTL
+y_golden = [0, 0, y_scaled]; 
+
+% Save Golden Output as Decimal integers for RTL comparison
+fileID_out = fopen('my_fir_golden_ref.txt','w');
+for i = 1:length(y_golden)
+    fprintf(fileID_out, "%d\n", y_golden(i));
+end
+fclose(fileID_out);
+
+disp('MATLAB: All files generated successfully with latency synchronization.');
+% ===== SYNTHESIZABLE ROM FOR VIVADO =====
+
+fid = fopen('fir_coeff_rom.vh','w');
+
+for i = 1:length(h_quant)
+    hexval = dec2hex(typecast(int16(h_quant(i)),'uint16'),4);
+    fprintf(fid,"h[%d] = 16'sh%s;\n", i-1, hexval);
+end
+
+fclose(fid);
+
+disp('ROM file fir_coeff_rom.vh generated for synthesis');
