@@ -33,13 +33,13 @@ Although FIR filters perform the same mathematical convolution operation, their 
 
 In this project, three popular FIR filter architectures were designed in Verilog HDL and implemented on a Xilinx FPGA using Vivado 2022.2:
 
-### ✔ Direct Form
+###  Direct Form
 A straightforward implementation using delay registers, multipliers, and adders.
 
-### ✔ Symmetric Form
+###  Symmetric Form
 Utilizes coefficient symmetry to reduce the number of multipliers and DSP resources.
 
-### ✔ Transposed Form
+###  Transposed Form
 Rearranges computation into a pipelined structure to achieve higher operating frequency.
 
 All designs were implemented on the same FPGA device with identical timing constraints for fair comparison.
@@ -51,7 +51,7 @@ All designs were implemented on the same FPGA device with identical timing const
 - Verilog HDL – RTL design  
 - Xilinx Vivado 2022.2 – Synthesis, implementation, timing & power analysis  
 - Simulation tools (Vivado/GTKWave) – Functional verification  
-- MATLAB – FIR coefficient generation (if applicable)  
+- MATLAB – FIR coefficient generation   
 - Microsoft Excel – Result comparison  
 
 ---
@@ -91,7 +91,7 @@ Fir_filter_architectures/
 ## ⚙ Methodology
 
 1. Designed FIR filters in three architectures using Verilog HDL  
-2. Verified functionality with testbenches  
+2. Took coefficients as a result of matlab  and verified with golden output
 3. Applied identical timing constraints in Vivado  
 4. Performed:
    - Synthesis  
